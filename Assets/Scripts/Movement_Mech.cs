@@ -46,13 +46,14 @@ public class Movement_Mech : MonoBehaviour
         anim = GetComponentInChildren<AnimationScript>();
 
         //Jump calculations for gravity
+        /*
         initialJumpVelocity_max = 2 * MaxJumpHeight / TimetoJumpApex;
         
         upGravity_max = -2 * MaxJumpHeight / Mathf.Pow(TimetoJumpApex, 2.0f);
         downGravity_max = -2 * MaxJumpHeight / Mathf.Pow(TimetoJumpDrop, 2.0f);
 
         initialJumpVelocity_min = Mathf.Sqrt(2 * Mathf.Abs(upGravity_max * MinJumpHeight));
-        
+        */
 
         //Debug.Log(initialJumpVelocity_max);
         //Debug.Log(initialJumpVelocity_min);
@@ -69,7 +70,12 @@ public class Movement_Mech : MonoBehaviour
         float yRaw = Input.GetAxisRaw("Vertical");
         Vector2 dir = new Vector2(xRaw, yRaw);
 
+        initialJumpVelocity_max = 2 * MaxJumpHeight / TimetoJumpApex;
+        
+        upGravity_max = -2 * MaxJumpHeight / Mathf.Pow(TimetoJumpApex, 2.0f);
+        downGravity_max = -2 * MaxJumpHeight / Mathf.Pow(TimetoJumpDrop, 2.0f);
 
+        initialJumpVelocity_min = Mathf.Sqrt(2 * Mathf.Abs(upGravity_max * MinJumpHeight));
 
         Walk(dir);
         anim.SetHorizontalMovement(x, y, rb.velocity.y);
