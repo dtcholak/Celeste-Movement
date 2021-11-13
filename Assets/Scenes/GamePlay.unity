@@ -6529,9 +6529,9 @@ GameObject:
   m_Component:
   - component: {fileID: 213030896}
   - component: {fileID: 213030895}
-  - component: {fileID: 213030897}
   - component: {fileID: 213030899}
   - component: {fileID: 213030898}
+  - component: {fileID: 213030894}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -6539,6 +6539,33 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &213030894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 213030893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02526794839bbbb49ae58073a9d9bd94, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rb: {fileID: 0}
+  maxSpeed: 10
+  acceleration: 10
+  deceleration: 10
+  MaxJumpHeight: 1
+  MinJumpHeight: 0.5
+  TimetoJumpApex: 0.4
+  TimetoJumpDrop: 0.3
+  dashSpeed: 20
+  dashdrag: 10
+  groundTouch: 0
+  jumped: 0
+  isDashing: 0
+  side: 1
+  jumpParticle: {fileID: 708599380}
 --- !u!50 &213030895
 Rigidbody2D:
   serializedVersion: 4
@@ -6576,30 +6603,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &213030897
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 213030893}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 02526794839bbbb49ae58073a9d9bd94, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rb: {fileID: 0}
-  maxSpeed: 10
-  acceleration: 10
-  deceleration: 10
-  MaxJumpHeight: 1.5
-  MinJumpHeight: 0.2
-  TimetoJumpApex: 1
-  TimetoJumpDrop: 0.2
-  groundTouch: 0
-  jumped: 0
-  side: 1
-  jumpParticle: {fileID: 708599380}
 --- !u!61 &213030898
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -11612,7 +11615,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -11636,7 +11639,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 500, y: 500, z: -10}
+  m_LocalPosition: {x: -14, y: -1.5259998, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

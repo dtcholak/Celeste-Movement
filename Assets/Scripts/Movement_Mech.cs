@@ -20,12 +20,16 @@ public class Movement_Mech : MonoBehaviour
     [SerializeField] public float MinJumpHeight = 0.5f; // y jump height (tap jump)
     [SerializeField] public float TimetoJumpApex = 0.4f; //y jump uptime (holding jump)
     [SerializeField] public float TimetoJumpDrop = 0.3f; //y jump downtime (holding jump)
+    public float dashSpeed = 15; //dash speed
     private float speed = 0; //initial velocity
+    public float dashdrag = 50; //linear drag after dashing
+    
 
     [Space]
     [Header("Booleans")]
     public bool groundTouch; //boolean player touching ground 
     public bool jumped; //boolean player recently jumped
+    public bool isDashing; //boolean player is Dashing
     public int side = 1; //1 is right, -1 left 
 
     [Space]
@@ -37,6 +41,7 @@ public class Movement_Mech : MonoBehaviour
     float upGravity_max; //variable creation for upwards gravity (less than downward for "heavy" feel )
     float downGravity_max; //variable creation for downwards gravity 
     float timer = 0; //timer for checking jump timing
+    float dragTimer = 0; //timer for putting linear drag back to normal
 
     // Start is called before the first frame update
     void Start()
@@ -76,10 +81,25 @@ public class Movement_Mech : MonoBehaviour
         downGravity_max = -2 * MaxJumpHeight / Mathf.Pow(TimetoJumpDrop, 2.0f); //downward gravity calculated to apex of jump based on 0 velocity at apex and set time to fall
 
         initialJumpVelocity_min = Mathf.Sqrt(2 * Mathf.Abs(upGravity_max * MinJumpHeight)); //calculation for initial jump tap velocity (based on upward gravity calc and set jump tap height)
-
-        Walk(dir);
+        
         anim.SetHorizontalMovement(x, y, rb.velocity.y); //animation for x direction movement based on x, y, current rigid body y velocity
-
+        if (Input.GetButtonDown("Fire3") && !isDashing)   //if left shift button is pressed
+        {
+            Dash(xRaw,yRaw);    //dash at dashspeed and add linear drag after a delay
+        }
+        if (isDashing)
+        {
+            dragTimer += Time.deltaTime;
+        }
+        if (dragTimer > 0.3)
+        {
+            rb.drag = 0;
+            isDashing = false;
+        }
+        if (!isDashing)
+        {   
+        
+        Walk(dir);
         if (Input.GetButtonDown("Jump") && coll.onGround && !jumped) //if jump pressed, and touching ground, and haven't recently jumped
         {
             Jump(initialJumpVelocity_max); //jump at the speed of initial jump velocity max
@@ -93,7 +113,7 @@ public class Movement_Mech : MonoBehaviour
             jumped = false; //reset so no jump has recently happened
             }
         }
-
+        }
             Vector2 Velocity = rb.velocity; //new variable for current velocity
 
         if(rb.velocity.y > 0) //if current rb y velocity is greater than 0 
@@ -107,7 +127,7 @@ public class Movement_Mech : MonoBehaviour
             //Velocity.y += downGravity_max * Time.deltaTime;
             //rb.velocity = Velocity;
         }
-
+        
         
 
         if (coll.onGround && !groundTouch) //if touching ground and weren't before (landing)
@@ -195,5 +215,30 @@ public class Movement_Mech : MonoBehaviour
         jumpParticle.Play(); //jump particle animation
     }
 
+    private void Dash(float x, float y)
+    {
+     
+     
+        isDashing = true; //set that player is Dashing
+        //anim.SetTrigger("dash");
 
+        rb.velocity = Vector2.zero; //set rigid body velocity to a zero vector
+        Vector2 dir = new Vector2(x, y); //get the input directions and assign them as current
+        rb.velocity += dir.normalized * dashSpeed; //make the velocities of magnitude one and multiply by the set dash speed 
+        StartCoroutine(DashDrag());
+
+     
+
+    }
+
+    IEnumerator DashDrag()
+    {
+    yield return new WaitForSeconds(0.1f); //wait half a second for dash to occur
+    //Vector2 dir = new Vector2(x, y); //get input directions and assign them as current
+    //rb.velocity -= dir.normalized * dashdecay; //make the velocities of magnitude one and subtract by set dash decay to slow 
+    rb.drag = dashdrag;
+    
+    }
 }
+ 
+
