@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
-public class Movement_Mech : MonoBehaviour
+public class Movement_Mech_dash : MonoBehaviour
 {
     private Collision_Mech coll;
     [HideInInspector]
@@ -20,12 +20,16 @@ public class Movement_Mech : MonoBehaviour
     [SerializeField] public float MinJumpHeight = 0.5f; // y jump height (tap jump)
     [SerializeField] public float TimetoJumpApex = 0.4f; //y jump uptime (holding jump)
     [SerializeField] public float TimetoJumpDrop = 0.3f; //y jump downtime (holding jump)
+    public float dashspeed = 15; //dash speed
     private float speed = 0; //initial velocity
+    public float dashdecay = 
+    
 
     [Space]
     [Header("Booleans")]
     public bool groundTouch; //boolean player touching ground 
     public bool jumped; //boolean player recently jumped
+    public bool isDashing; //boolean player is Dashing
     public int side = 1; //1 is right, -1 left 
 
     [Space]
@@ -94,7 +98,7 @@ public class Movement_Mech : MonoBehaviour
             }
         }
 
-            Vector2 Velocity = rb.velocity; //new variable for current velocity
+            Vector2 Velocity = rb.velocity; //new variable for current velocitye
 
         if(rb.velocity.y > 0) //if current rb y velocity is greater than 0 
         {
@@ -195,5 +199,29 @@ public class Movement_Mech : MonoBehaviour
         jumpParticle.Play(); //jump particle animation
     }
 
+
+}
+ 
+    private void Dash(float x, float y)
+ {
+     if(jumped=true && dir.x !=0) //if player has jumped and input a directional movement command
+     {
+         isDashing = true; //set that player is Dashing
+        //anim.SetTrigger("dash");
+
+        rb.velocity = Vector2.zero; //set rigid body velocity to a zero vector
+        Vector2 dir = new Vector2(xRaw, yRaw); //get the input directions and assign them as current
+        rb.velocity += dir.normalized * dashSpeed; //make the velocities of magnitude one and multiply by the set dash speed 
+        StartCoroutine(DashDrag());
+
+     }
+
+ }
+
+IEnumerator DashDrag()
+{
+    yield return new WaitforSeconds(.50f); //wait half a second for dash to occur
+    Vector2 dir = new Vector2(xRaw, yRaw); //get input directions and assign them as current
+    rb.velocity -= dir.normalized * dashdecay; //make the velocities of magnitude one and subtract by set dash decay to slow 
 
 }
