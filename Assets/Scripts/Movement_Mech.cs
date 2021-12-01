@@ -202,7 +202,10 @@ public class Movement_Mech : MonoBehaviour
         }
         else if(dir.x != 0 && abs_speed > 10)
         {
+            if(Mathf.Sign(dir.x) != Mathf.Sign(speed))
+            {
             speed += dir.x*acceleration*Time.deltaTime; //increment speed by acceleration constant
+            }
             speed = Mathf.Clamp(speed,-6*maxSpeed,6*maxSpeed); //ensures that speed remains within of maximum
             //rb.velocity = new Vector2(speed, rb.velocity.y); //set rigid body velocity x to speed and y rigid body to current y rigid body velocity
         }
