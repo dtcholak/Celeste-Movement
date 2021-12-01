@@ -10,6 +10,7 @@ public class Movement_Mech : MonoBehaviour
     [HideInInspector]
     public Rigidbody2D rb;
     private AnimationScript anim;
+    private Player_Input control;
 
     [Space]
     [Header("Stats")]
@@ -23,6 +24,7 @@ public class Movement_Mech : MonoBehaviour
     public float dashSpeed = 15; //dash speed
     private float speed = 0; //initial velocity
     public float dashdrag = 50; //linear drag after dashing
+    private float abs_speed;
     
 
     [Space]
@@ -49,16 +51,15 @@ public class Movement_Mech : MonoBehaviour
         coll = GetComponent<Collision_Mech>();
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponentInChildren<AnimationScript>();
+        control = GetComponent<Player_Input>();
 
         //Jump calculations for gravity
-        /*
-        initialJumpVelocity_max = 2 * MaxJumpHeight / TimetoJumpApex;
+        initialJumpVelocity_max = 2 * MaxJumpHeight / TimetoJumpApex; //calculation for initial jump hold velocity (based on max height and time to apex)
         
-        upGravity_max = -2 * MaxJumpHeight / Mathf.Pow(TimetoJumpApex, 2.0f);
-        downGravity_max = -2 * MaxJumpHeight / Mathf.Pow(TimetoJumpDrop, 2.0f);
+        upGravity_max = -2 * MaxJumpHeight / Mathf.Pow(TimetoJumpApex, 2.0f); //upward gravity calculated to apex of jump based on 0 velocity at apex and set time to apex  
+        downGravity_max = -2 * MaxJumpHeight / Mathf.Pow(TimetoJumpDrop, 2.0f); //downward gravity calculated to apex of jump based on 0 velocity at apex and set time to fall
 
-        initialJumpVelocity_min = Mathf.Sqrt(2 * Mathf.Abs(upGravity_max * MinJumpHeight));
-        */
+        initialJumpVelocity_min = Mathf.Sqrt(2 * Mathf.Abs(upGravity_max * MinJumpHeight)); //calculation for initial jump tap velocity (based on upward gravity calc and set jump tap height)
 
         //Debug.Log(initialJumpVelocity_max);
         //Debug.Log(initialJumpVelocity_min);
@@ -69,37 +70,36 @@ public class Movement_Mech : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        float x = Input.GetAxis("Horizontal"); //x direction variable input (smoothed)
-        float y = Input.GetAxis("Vertical"); //y direction variable input (smoothed)
-        float xRaw = Input.GetAxisRaw("Horizontal"); //raw x direction variable input 
-        float yRaw = Input.GetAxisRaw("Vertical"); //raw y direction variable input
-        Vector2 dir = new Vector2(xRaw, yRaw); //vector setting of raw x + y 
 
-        initialJumpVelocity_max = 2 * MaxJumpHeight / TimetoJumpApex; //calculation for initial jump hold velocity (based on max height and time to apex)
-        
-        upGravity_max = -2 * MaxJumpHeight / Mathf.Pow(TimetoJumpApex, 2.0f); //upward gravity calculated to apex of jump based on 0 velocity at apex and set time to apex  
-        downGravity_max = -2 * MaxJumpHeight / Mathf.Pow(TimetoJumpDrop, 2.0f); //downward gravity calculated to apex of jump based on 0 velocity at apex and set time to fall
+        Vector2 dir = control.dir; //vector setting of raw x + y 
+        float x = dir.x; //raw x
+        float y = dir.y; //raw y
 
-        initialJumpVelocity_min = Mathf.Sqrt(2 * Mathf.Abs(upGravity_max * MinJumpHeight)); //calculation for initial jump tap velocity (based on upward gravity calc and set jump tap height)
+        Vector2 dash_dir = control.dash_dir;
+        float dash_x = dash_dir.x;
+        float dash_y = dash_dir.y;
+
         
         anim.SetHorizontalMovement(x, y, rb.velocity.y); //animation for x direction movement based on x, y, current rigid body y velocity
         if (Input.GetButtonDown("Fire3") && !isDashing)   //if left shift button is pressed
         {
-            Dash(xRaw,yRaw);    //dash at dashspeed and add linear drag after a delay
+            Dash(dash_x,dash_y);    //dash at dashspeed and add linear drag after a delay
         }
         if (isDashing)
         {
             dragTimer += Time.deltaTime;
         }
-        if (dragTimer > 0.3)
+        if (dragTimer > 0.7)
         {
             rb.drag = 0;
             isDashing = false;
+            dragTimer = 0;
         }
         if (!isDashing)
         {   
         
         Walk(dir);
+        
         if (Input.GetButtonDown("Jump") && coll.onGround && !jumped) //if jump pressed, and touching ground, and haven't recently jumped
         {
             Jump(initialJumpVelocity_max); //jump at the speed of initial jump velocity max
@@ -179,6 +179,10 @@ public class Movement_Mech : MonoBehaviour
 
     private void Walk(Vector2 dir) //walk function, with direction input (x raw,y raw)
     {
+        speed = rb.velocity.x;
+        
+        abs_speed = Mathf.Abs(speed);
+        Debug.Log(abs_speed);
         if(coll.onLeftWall && dir.x <= 0) //if touching left wall and left input 
         {
             rb.velocity = new Vector2(0, rb.velocity.y); //set x velocity to 0 
@@ -191,18 +195,23 @@ public class Movement_Mech : MonoBehaviour
             speed = 0; // set speed to 0 
             return;
         }
-        if(dir.x != 0) //if either right or left input (any x direction input)
+        if(dir.x != 0 && abs_speed <= 10) //if either right or left input (any x direction input)
         {
-        speed += dir.x*acceleration * Time.deltaTime; //increment speed by acceleration constant
-        speed = Mathf.Clamp(speed,-maxSpeed,maxSpeed); //ensures that speed remains within of maximums
-        rb.velocity = new Vector2(speed, rb.velocity.y); //set rigid body velocity x to speed and y rigid body to current y rigid body velocity 
+        speed += dir.x*acceleration*Time.deltaTime; //increment speed by acceleration constant
+        speed = Mathf.Clamp(speed,-maxSpeed,maxSpeed); //ensures that speed remains within of maximums 
+        }
+        else if(dir.x != 0 && abs_speed > 10)
+        {
+            speed += dir.x*acceleration*Time.deltaTime; //increment speed by acceleration constant
+            speed = Mathf.Clamp(speed,-6*maxSpeed,6*maxSpeed); //ensures that speed remains within of maximum
+            //rb.velocity = new Vector2(speed, rb.velocity.y); //set rigid body velocity x to speed and y rigid body to current y rigid body velocity
         }
         else //OTHERWISE
         {
             speed -= Mathf.Sign(speed)*deceleration * Time.deltaTime; //decelerate if no input of x direction
-            rb.velocity = new Vector2(speed,rb.velocity.y); //update rigid body velocity
-            
+            //rb.velocity = new Vector2(speed,rb.velocity.y); //update rigid body velocity
         }
+        rb.velocity = new Vector2(speed, rb.velocity.y); //set rigid body velocity x to speed and y rigid body to current y rigid body velocity
         //Debug.Log(speed);
     }
 
@@ -222,9 +231,9 @@ public class Movement_Mech : MonoBehaviour
         isDashing = true; //set that player is Dashing
         //anim.SetTrigger("dash");
 
-        rb.velocity = Vector2.zero; //set rigid body velocity to a zero vector
-        Vector2 dir = new Vector2(x, y); //get the input directions and assign them as current
-        rb.velocity += dir.normalized * dashSpeed; //make the velocities of magnitude one and multiply by the set dash speed 
+        //rb.velocity = Vector2.zero; //set rigid body velocity to a zero vector
+        Vector2 dash_dir = new Vector2(x, y); //get the input directions and assign them as current
+        rb.velocity += dash_dir.normalized * dashSpeed; //make the velocities of magnitude one and multiply by the set dash speed 
         StartCoroutine(DashDrag());
 
      
@@ -233,7 +242,7 @@ public class Movement_Mech : MonoBehaviour
 
     IEnumerator DashDrag()
     {
-    yield return new WaitForSeconds(0.1f); //wait half a second for dash to occur
+    yield return new WaitForSeconds(0.2f); //wait half a second for dash to occur
     //Vector2 dir = new Vector2(x, y); //get input directions and assign them as current
     //rb.velocity -= dir.normalized * dashdecay; //make the velocities of magnitude one and subtract by set dash decay to slow 
     rb.drag = dashdrag;

@@ -101,7 +101,7 @@ public class Collision_Mech : MonoBehaviour
         onCeiling = Physics2D.OverlapBox((Vector2)transform.position + topOffset, (Vector2)topSize, groundLayer);
         */
 
-        wallSide = onRightWall ? -1 : 1;
+        wallSide = onRightWall ? -1 : 1; 
     }
 
     void OnDrawGizmos()
