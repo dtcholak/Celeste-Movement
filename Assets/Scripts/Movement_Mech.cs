@@ -25,9 +25,9 @@ public class Movement_Mech : MonoBehaviour
     private float speed = 0; //initial velocity
     public float dashdrag = 50; //linear drag after dashing
     private float abs_speed = 0; //absolute value of speed
-    public float fallMultiplier; //gravity multiplier when falling
-    public float lowJumpMultiplier; //gravity multiplier when jumping low;
-    public float flyingMultiplier = 0.9f; // % of original gravity removed when flying
+    private float fallMultiplier; //gravity multiplier when falling
+    private float lowJumpMultiplier; //gravity multiplier when jumping low;
+    private float flyingMultiplier = 0.1f; // % of original gravity removed when flying
     
 
     [Space]
@@ -36,6 +36,7 @@ public class Movement_Mech : MonoBehaviour
     public bool jumped; //boolean player recently jumped
     public bool isDashing; //boolean player is Dashing
     public bool flying; //boolean player is flying (dashing while not grounded)
+    public bool dashed; //boolean player has dashed
     public int side = 1; //1 is right, -1 left 
 
     [Space]
@@ -73,7 +74,7 @@ public class Movement_Mech : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //Debug.Log(rb.velocity);
+        Debug.Log(flying);
         //Debug.Log(upGravity_max);
         //Debug.Log(downGravity_max);
         //Debug.Log(upGravity_min);
@@ -88,14 +89,34 @@ public class Movement_Mech : MonoBehaviour
 
         
         anim.SetHorizontalMovement(x, y, rb.velocity.y); //animation for x direction movement based on x, y, current rigid body y velocity
+        if (dashed)
+        {
+        if (!coll.onGround)
+        {
+            flying = true;
+            
+        }
+        else if(coll.onGround)
+        {
+            flying = false;
+            dashed = false;
+        }
+        }
+        if (flying)
+        {
+            //Physics2D.gravity = Vector2.up * -0.5f;
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (flyingMultiplier - 1) * Time.deltaTime;
+        }
         if (Input.GetButtonDown("Fire3") && !isDashing)   //if left shift button is pressed
         {
             Dash(dash_x,dash_y);    //dash at dashspeed and add linear drag after a delay
+            dashed = true;
             
         }
         if (isDashing)
         {
             dragTimer += Time.deltaTime;
+
 
         }
         if (dragTimer > 0.5)
@@ -103,23 +124,13 @@ public class Movement_Mech : MonoBehaviour
             rb.drag = 0;
             isDashing = false;
             dragTimer = 0;
-            if (coll.onGround)
-            {
-                flying = false;
-            }
-            else{
-                flying = true;
-            }
+
 
         }
-        if (flying)
-        {
-            //Physics2D.gravity = Vector2.up * -0.5f;
-            rb.velocity += Vector2.up * Physics2D.gravity.y * (flyingMultiplier - 1) * Time.deltaTime;
-        }
+
         if (!isDashing)
         {   
-        flying = false;
+        
         Walk(dir);
         
         if (Input.GetButtonDown("Jump") && coll.onGround && !jumped) //if jump pressed, and touching ground, and haven't recently jumped
