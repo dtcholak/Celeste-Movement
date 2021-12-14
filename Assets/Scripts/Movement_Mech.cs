@@ -91,7 +91,7 @@ public class Movement_Mech : MonoBehaviour
         anim.SetHorizontalMovement(x, y, rb.velocity.y); //animation for x direction movement based on x, y, current rigid body y velocity
         if (dashed)
         {
-        if (!coll.onGround)
+        if (rb.velocity.y > 0.01)
         {
             flying = true;
             
@@ -263,6 +263,7 @@ public class Movement_Mech : MonoBehaviour
 
     private void Jump(float Jump_initialVelocity) //creation of jump initial velocity 
     {
+        flying = false;
         rb.velocity = Vector2.right * rb.velocity;
         rb.velocity += Vector2.up * Jump_initialVelocity; //set rigid body velocity to current rb x velocity and y velocity input to function
         jumped = true; //recently jumped
