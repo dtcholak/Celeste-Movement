@@ -12,6 +12,7 @@ public class Movement_Mech : MonoBehaviour
     private AnimationScript anim;
     private Player_Input control;
 
+
     [Space]
     [Header("Stats")]
     [SerializeField] public float maxSpeed = 10; //max horizonal speed  
@@ -27,7 +28,7 @@ public class Movement_Mech : MonoBehaviour
     private float abs_speed = 0; //absolute value of speed
     private float fallMultiplier; //gravity multiplier when falling
     private float lowJumpMultiplier; //gravity multiplier when jumping low;
-    private float flyingMultiplier = 0.1f; // % of original gravity removed when flying
+    private float flyingMultiplier = 0.3f; // % of original gravity removed when flying
     
 
     [Space]
@@ -42,6 +43,8 @@ public class Movement_Mech : MonoBehaviour
     [Space]
     [Header("Polish")]
     public ParticleSystem jumpParticle;
+    public SpriteRenderer fire;
+    public GameObject wings;
 
     float initialJumpVelocity_max; //y jump hold velocity variable creation 
     float initialJumpVelocity_min; //y jump tap velocity variable 
@@ -74,7 +77,7 @@ public class Movement_Mech : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(flying);
+        //Debug.Log(flying);
         //Debug.Log(upGravity_max);
         //Debug.Log(downGravity_max);
         //Debug.Log(upGravity_min);
@@ -89,6 +92,10 @@ public class Movement_Mech : MonoBehaviour
 
         
         anim.SetHorizontalMovement(x, y, rb.velocity.y); //animation for x direction movement based on x, y, current rigid body y velocity
+        if (!flying)
+        {
+            wings.SetActive(false);
+        }
         if (dashed)
         {
         if (rb.velocity.y > 0.01)
@@ -105,6 +112,7 @@ public class Movement_Mech : MonoBehaviour
         if (flying)
         {
             //Physics2D.gravity = Vector2.up * -0.5f;
+            wings.SetActive(true);
             rb.velocity += Vector2.up * Physics2D.gravity.y * (flyingMultiplier - 1) * Time.deltaTime;
         }
         if (Input.GetButtonDown("Fire3") && !isDashing)   //if left shift button is pressed
@@ -119,7 +127,7 @@ public class Movement_Mech : MonoBehaviour
 
 
         }
-        if (dragTimer > 0.5)
+        if (dragTimer > 0.3)
         {
             rb.drag = 0;
             isDashing = false;
@@ -130,7 +138,15 @@ public class Movement_Mech : MonoBehaviour
 
         if (!isDashing)
         {   
-        
+            
+        if (rb.velocity.magnitude > 35)
+        {
+            fire.enabled = true;
+        }
+        else if(rb.velocity.magnitude < 35) 
+        {
+            fire.enabled = false;
+        }
         Walk(dir);
         
         if (Input.GetButtonDown("Jump") && coll.onGround && !jumped) //if jump pressed, and touching ground, and haven't recently jumped
